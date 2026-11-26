@@ -1,0 +1,29 @@
+name: Build release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Build plugin archive
+        run: |
+          mkdir -p build/spamblock
+          cp spamblock.php build/spamblock/spamblock.php
+          cp readme.txt build/spamblock/readme.txt
+          cd build
+          zip -r spamblock.zip spamblock
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" build/spamblock.zip --generate-notes --title "SpamBlock $GITHUB_REF_NAME"
